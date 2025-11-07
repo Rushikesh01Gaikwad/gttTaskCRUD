@@ -1,0 +1,94 @@
+<div *ngIf="!selectedProduct">
+  <div class="container mt-5">
+    <h2 class="text-center">Product List</h2>
+  </div>
+
+  <div class="container mt-4">
+    <div class="mb-3 d-flex justify-content-end">
+      <input
+        type="text"
+        class="form-control w-25"
+        placeholder="Search by title..."
+        [(ngModel)]="searchTerm"
+      />
+    </div>
+
+    <div class="table-container">
+      <table class="table table-bordered table-hover">
+        <thead class="table-light sticky-top">
+          <tr>
+            <th scope="col">Id</th>
+            <th scope="col">Title</th>
+            <th scope="col">Price</th>
+            <th scope="col">Description</th>
+            <th scope="col">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let product of filteredProducts()">
+            <td>{{ product.id }}</td>
+            <td>{{ product.title }}</td>
+            <td>{{ product.price }}</td>
+            <td>{{ product.description }}</td>
+            <td class="d-flex gap-2">
+              <button
+                class="btn btn-outline-success btn-sm"
+                (click)="editProduct(product)"
+              >
+                <i class="bi bi-pencil-square"></i>
+              </button>
+              <button
+                class="btn btn-outline-danger btn-sm"
+                (click)="deleteProduct(product.id)"
+              >
+                <i class="bi bi-trash"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="container mt-4" *ngIf="selectedProduct">
+  <h5>Edit Product</h5>
+  <form (ngSubmit)="updateProduct()">
+    <div class="mb-2">
+      <label>Title</label>
+      <input
+        type="text"
+        class="form-control"
+        [(ngModel)]="selectedProduct.title"
+        name="title"
+        required
+      />
+    </div>
+    <div class="mb-2">
+      <label>Price</label>
+      <input
+        type="number"
+        class="form-control"
+        [(ngModel)]="selectedProduct.price"
+        name="price"
+        required
+      />
+    </div>
+    <div class="mb-2">
+      <label>Description</label>
+      <textarea
+        class="form-control"
+        [(ngModel)]="selectedProduct.description"
+        name="description"
+      ></textarea>
+    </div>
+    <button class="btn btn-primary btn-sm me-2" type="submit">Update</button>
+    <button
+      class="btn btn-secondary btn-sm"
+      type="button"
+      (click)="cancelEdit()"
+    >
+      Cancel
+    </button>
+  </form>
+</div>
