@@ -21,12 +21,12 @@ export class HttpService {
     return this.api.get(this.apiUrl, { params: param })
   }
 
-  public put(obj?: [], param?: any): Observable<any> {
-    return this.api.put(this.apiUrl, obj, { params: param });
+  public put(obj: any): Observable<any> {
+    return this.api.put(`${this.apiUrl}/${obj.id}`, obj);
   }
 
-  public delete(param?: any, fun?: any): Observable<any> {
-    return this.api.delete(this.apiUrl, { params: param });
+  public delete(id: number): Observable<any> {
+    return this.api.delete(`${this.apiUrl}/${id}`);
   }
 
 }

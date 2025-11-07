@@ -2,19 +2,25 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpService } from '../../services/http.service';
+import { Product } from '../interface/product';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './dashboard.component.html',
-  styleUrl: './dashboard.component.scss',
+  styleUrls: ['./dashboard.component.scss'],
 })
 export class DashboardComponent {
-  produdcts: any[] = [];
+  products: Product[] = [];
+  filteredList: Product[] = [];
   searchTerm: string = '';
-  selectedProduct: any = null;
+  selectedProduct: Product | any;
   action: string = '';
+  categories: string[] = [];
+  selectedCategory: string = 'All';
+  currentPage: number = 1;
+  itemsPerPage: number = 10;
 
   constructor(private http: HttpService) { }
 
@@ -23,39 +29,82 @@ export class DashboardComponent {
   }
 
   fetchProducts(): void {
-    this.http.get().subscribe((data: any) => {
-      this.produdcts = data;
+    this.http.get().subscribe((data: Product[]) => {
+      this.products = data;
+      this.filteredList = [...this.products];
+      this.extractCategories();
     });
   }
 
-  filteredProducts() {
-    if (!this.searchTerm.trim()) return this.produdcts;
-    return this.produdcts.filter((p) =>
-      p.title.toLowerCase().includes(this.searchTerm.toLowerCase())
-    );
+  extractCategories(): void {
+    const uniqueCategories = new Set(this.products.map(p => p.category));
+    this.categories = ['All', ...Array.from(uniqueCategories)];
   }
 
-  editProduct(product: any) {
+  filteredProducts(): Product[] {
+    let filtered = [...this.products];
+    if (this.selectedCategory !== 'All') {
+      filtered = filtered.filter(p => p.category === this.selectedCategory);
+    }
+    if (this.searchTerm.trim()) {
+      filtered = filtered.filter(p =>
+        p.title.toLowerCase().includes(this.searchTerm.toLowerCase())
+      );
+    }
+
+    this.filteredList = filtered;
+    return this.paginatedProducts();
+  }
+
+  paginatedProducts(): Product[] {
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    return this.filteredList.slice(startIndex, startIndex + this.itemsPerPage);
+  }
+
+  totalPages(): number {
+    return Math.ceil(this.filteredList.length / this.itemsPerPage);
+  }
+
+  changePage(page: number): void {
+    this.currentPage = page;
+  }
+
+  editProduct(product: Product) {
     this.selectedProduct = { ...product };
     this.action = 'Edit';
   }
 
   addProduct() {
-    this.selectedProduct = { title: '', price: '', description: '' };
+    this.selectedProduct = {
+      id: 0,
+      title: '',
+      price: 0,
+      description: '',
+      category: '',
+      image: '',
+      rating: { rate: 0, count: 0 },
+    };
     this.action = 'Add';
   }
 
+
   saveProduct() {
     if (this.action === 'Add') {
-      this.http.post(this.selectedProduct).subscribe(() => {
+      this.http.post(this.selectedProduct).subscribe((newProduct: any) => {
         alert('✅ Product added successfully!');
-        this.fetchProducts();
+        this.products.push({
+          ...this.selectedProduct,
+          id: newProduct.id || this.products.length + 1,
+        }); // Update local list
+        this.filteredProducts();
         this.selectedProduct = null;
       });
     } else if (this.action === 'Edit') {
-      this.http.put(this.selectedProduct, { id: this.selectedProduct.id }).subscribe(() => {
+      this.http.put(this.selectedProduct).subscribe(() => {
         alert('✅ Product updated successfully!');
-        this.fetchProducts();
+        const index = this.products.findIndex(p => p.id === this.selectedProduct.id);
+        if (index > -1) this.products[index] = { ...this.selectedProduct }; // Update local list
+        this.filteredProducts();
         this.selectedProduct = null;
       });
     }
@@ -65,11 +114,15 @@ export class DashboardComponent {
     const confirmed = confirm('⚠️ Are you sure you want to delete this product?');
     if (!confirmed) return;
 
-    this.http.delete({ id }).subscribe(() => {
+    this.http.delete(id).subscribe(() => {
       alert('🗑️ Product deleted successfully!');
-      this.fetchProducts();
+      this.products = this.products.filter(p => p.id !== id); // Update local list
+      this.filteredProducts();
     });
   }
+
+
+
 
   cancelEdit() {
     this.selectedProduct = null;

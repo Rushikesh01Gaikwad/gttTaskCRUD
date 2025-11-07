@@ -1,5 +1,5 @@
 .table-container {
-  height: calc(100vh - 190px);
+  // height: calc(100vh - 190px);
   overflow-y: auto;
 }
 
@@ -19,7 +19,7 @@
 .table-container tbody {
   display: block;
   overflow-y: auto;
-  height: calc(100vh - 250px);
+  height: calc(100vh - 260px);
 }
 
 .table-container thead,
