@@ -2,7 +2,6 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpService } from '../../services/http.service';
-declare var $: any;
 
 @Component({
   selector: 'app-dashboard',
@@ -15,6 +14,7 @@ export class DashboardComponent {
   produdcts: any[] = [];
   searchTerm: string = '';
   selectedProduct: any = null;
+  action: string = '';
 
   constructor(private http: HttpService) { }
 
@@ -29,9 +29,7 @@ export class DashboardComponent {
   }
 
   filteredProducts() {
-    if (!this.searchTerm.trim()) {
-      return this.produdcts;
-    }
+    if (!this.searchTerm.trim()) return this.produdcts;
     return this.produdcts.filter((p) =>
       p.title.toLowerCase().includes(this.searchTerm.toLowerCase())
     );
@@ -39,16 +37,28 @@ export class DashboardComponent {
 
   editProduct(product: any) {
     this.selectedProduct = { ...product };
+    this.action = 'Edit';
   }
 
-  updateProduct() {
-    if (!this.selectedProduct) return;
+  addProduct() {
+    this.selectedProduct = { title: '', price: '', description: '' };
+    this.action = 'Add';
+  }
 
-    this.http.put(this.selectedProduct, { id: this.selectedProduct.id }).subscribe(() => {
-      alert('Product updated successfully!');
-      this.fetchProducts();
-      this.selectedProduct = null;
-    });
+  saveProduct() {
+    if (this.action === 'Add') {
+      this.http.post(this.selectedProduct).subscribe(() => {
+        alert('✅ Product added successfully!');
+        this.fetchProducts();
+        this.selectedProduct = null;
+      });
+    } else if (this.action === 'Edit') {
+      this.http.put(this.selectedProduct, { id: this.selectedProduct.id }).subscribe(() => {
+        alert('✅ Product updated successfully!');
+        this.fetchProducts();
+        this.selectedProduct = null;
+      });
+    }
   }
 
   deleteProduct(id: number) {
@@ -56,7 +66,7 @@ export class DashboardComponent {
     if (!confirmed) return;
 
     this.http.delete({ id }).subscribe(() => {
-      alert('Product deleted successfully!');
+      alert('🗑️ Product deleted successfully!');
       this.fetchProducts();
     });
   }

@@ -4,13 +4,16 @@
   </div>
 
   <div class="container mt-4">
-    <div class="mb-3 d-flex justify-content-end">
+    <div class="mb-3 d-flex justify-content-end gap-2">
       <input
         type="text"
-        class="form-control w-25"
+        class="form-control form-control-sm w-25"
         placeholder="Search by title..."
         [(ngModel)]="searchTerm"
       />
+      <button class="btn btn-outline-primary btn-sm" (click)="addProduct()">
+        <i class="bi bi-plus-square"></i> Add
+      </button>
     </div>
 
     <div class="table-container">
@@ -52,8 +55,8 @@
 </div>
 
 <div class="container mt-4" *ngIf="selectedProduct">
-  <h5>Edit Product</h5>
-  <form (ngSubmit)="updateProduct()">
+  <h5>{{ action }} Product</h5>
+  <form (ngSubmit)="saveProduct()">
     <div class="mb-2">
       <label>Title</label>
       <input
@@ -82,7 +85,9 @@
         name="description"
       ></textarea>
     </div>
-    <button class="btn btn-primary btn-sm me-2" type="submit">Update</button>
+    <button class="btn btn-primary btn-sm me-2" type="submit">
+      {{ action }}
+    </button>
     <button
       class="btn btn-secondary btn-sm"
       type="button"
